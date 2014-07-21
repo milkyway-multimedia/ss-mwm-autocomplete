@@ -20,15 +20,18 @@ if (class_exists('GridFieldAddNewInlineButton')) {
 		/** @var string The value field that will be used when saving record to database */
 		public $valField = 'ID';
 
-		/** @var string The value field that this field will transform to when saving to database if an ID is not selected */
+		/** @var string The value field that this field will transform to when saving to database if an ID is not used (also field used for existing records) */
 		public $valFieldAfterSave = 'Title';
 
-		public function __construct($fragment = 'buttons-before-left', $refField = 'Title', $valField = 'ID', $valFieldAfterSave = 'Title') {
+		/** @var string|callable|Closure A callback for the value field (otherwise scaffolded from record) */
+		public $valFieldCallback;
+
+		public function __construct($fragment = 'buttons-before-left', $valFieldAfterSave = 'Title', $refField = 'Title', $valField = 'ID') {
 			parent::__construct($fragment);
 
+			$this->valFieldAfterSave = $valFieldAfterSave;
 			$this->refField          = $refField;
 			$this->valField          = $valField;
-			$this->valFieldAfterSave = $valFieldAfterSave;
 		}
 
 		/**
@@ -145,7 +148,7 @@ if (class_exists('GridFieldAddNewInlineButton')) {
 
 		public function getColumnField($gridField, $record, $columnName) {
 			if ($record->ID) {
-				$field = $record->scaffoldFormFields(['restrictFields' => [$this->valFieldAfterSave]])->pop();
+				$field = $this->getValFieldAfterSaveFormField($record);
 			} else {
 				$field = Select2Field::create('_AddOrExistingID', $columnName, '', DataList::create($gridField->List->dataClass())->subtract($gridField->List), '', $this->refField, $this->valField)->setEmptyString(_t('GridFieldAddNewOrExistingInlineButton.AddOrSelectExisting', 'Add or select existing'))->setMinimumSearchLength(0);
 			}
@@ -187,6 +190,22 @@ if (class_exists('GridFieldAddNewInlineButton')) {
 			}
 
 			return $return;
+		}
+
+		protected function getValFieldAfterSaveFormField($record) {
+			if ($this->valFieldCallback) {
+				if (is_callable($this->valFieldCallback)) {
+					return call_user_func($this->valFieldCallback, $record);
+				} elseif ($this->valFieldCallback instanceof Closure) {
+					$closure = $this->valFieldCallback;
+
+					return $closure($record);
+				} else {
+					return Object::create($this->valFieldCallback, $this->valFieldAfterSave);
+				}
+			}
+
+			return $record->scaffoldFormFields(['restrictFields' => [$this->valFieldAfterSave]])->pop();
 		}
 
 		private function getRowTemplate(GridField $grid, $after) {
