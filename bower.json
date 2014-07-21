@@ -1,0 +1,9 @@
+{
+    "name"           : "milkyway-multimedia/typeahead",
+    "version"        : "0.1",
+    "private"        : true,
+    "dependencies"   : {
+        "typeahead.js": "~0.10",
+        "select2": "~3.5"
+    }
+}

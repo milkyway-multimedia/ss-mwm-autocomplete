@@ -1,0 +1,19 @@
+{
+    "name"             : "milkyway-multimedia/ss-mwm-autocomplete",
+    "description"      : "Contains a few new components that you can add to the Silverstripe Shop Checkout Config.",
+    "type"             : "silverstripe-module",
+    "keywords"         : ["autocomplete", "typeahead", "select2", "tagging"],
+    "require"          : {
+        "silverstripe/framework": "~3.1"
+    },
+    "suggest"    : {
+        "ajshort/gridfieldextensions"         : "If you want to use the included GridFieldAddNewOrExistingInlineButton component, you will need to install gridfieldextensions"
+    },
+    "extra"            : {
+        "installer-name": "mwm-autocomplete"
+    },
+    "config"           : {
+        "process-timeout": 600
+    },
+    "minimum-stability": "dev"
+}
