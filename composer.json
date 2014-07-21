@@ -1,6 +1,6 @@
 {
     "name"             : "milkyway-multimedia/ss-mwm-autocomplete",
-    "description"      : "Contains a few new components that you can add to the Silverstripe Shop Checkout Config.",
+    "description"      : "Contains a collection of fields specifically for autocompletion. Uses typeahead for normal completion, and select 2 for dropdown style autocompletion.",
     "type"             : "silverstripe-module",
     "keywords"         : ["autocomplete", "typeahead", "select2", "tagging"],
     "require"          : {
