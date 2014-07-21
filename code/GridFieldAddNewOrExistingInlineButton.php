@@ -4,6 +4,8 @@
  * Milkyway Multimedia
  * GridFieldAddNewOrExistingInlineButton.php
  *
+ * This component must be added before GridFieldEditableColumns to work properly
+ *
  * @package milkyway-multimedia/ss-mwm-autocomplete
  * @author Mellisa Hankins <mell@milkywaymultimedia.com.au>
  */
@@ -12,10 +14,13 @@ if (class_exists('GridFieldAddNewInlineButton')) {
 	class GridFieldAddNewOrExistingInlineButton extends GridFieldAddNewInlineButton implements
 		GridField_ColumnProvider {
 
+		/** @var string The reference field that will be shown in dropdown */
 		public $refField = 'Title';
 
+		/** @var string The value field that will be used when saving record to database */
 		public $valField = 'ID';
 
+		/** @var string The value field that this field will transform to when saving to database if an ID is not selected */
 		public $valFieldAfterSave = 'Title';
 
 		public function __construct($fragment = 'buttons-before-left', $refField = 'Title', $valField = 'ID', $valFieldAfterSave = 'Title') {
@@ -26,6 +31,15 @@ if (class_exists('GridFieldAddNewInlineButton')) {
 			$this->valFieldAfterSave = $valFieldAfterSave;
 		}
 
+		/**
+		 * If the record exists, will use the valFieldAfterSave callback, otherwise
+		 * it will try to find an object by ID, and if it can't it will save to valFieldAfterSave
+		 *
+		 * @param GridField           $grid
+		 * @param DataObjectInterface $record
+		 *
+		 * @throws ValidationException
+		 */
 		public function handleSave(GridField $grid, DataObjectInterface $record) {
 			$list  = $grid->getList();
 			$value = $grid->Value();
@@ -196,6 +210,13 @@ if (class_exists('GridFieldAddNewInlineButton')) {
 			return str_replace('<td class="col-addOrExistingId">', '<td class="col-addOrExistingId">' . $field->Field(), $after);
 		}
 
+		/**
+		 * This will add the fallback value (val field after save) to the display fields component,
+		 * so it can be saved by @GridFieldEditableColumns
+		 *
+		 * @param GridField            $grid
+		 * @param GridFieldDataColumns $editable
+		 */
 		private function addFallbackValueToDisplayFields(GridField $grid, GridFieldDataColumns $editable) {
 			$fields = $editable->getDisplayFields($grid);
 
