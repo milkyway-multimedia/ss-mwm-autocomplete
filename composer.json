@@ -8,7 +8,7 @@
         "silverstripe/framework": "~3.1"
     },
     "suggest"    : {
-        "ajshort/gridfieldextensions"         : "If you want to use the included GridFieldAddNewOrExistingInlineButton component, you will need to install gridfieldextensions"
+        "ajshort/silverstripe-gridfieldextensions"         : "If you want to use the included GridFieldAddNewOrExistingInlineButton component, you will need to install gridfieldextensions"
     },
     "extra"            : {
         "installer-name": "mwm-autocomplete"
