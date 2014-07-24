@@ -399,7 +399,7 @@ class TypeAheadField extends TextField {
 	public function resultToMap($id, $text, $keyField = 'id', $valField = 'text') {
 		return [
 			$keyField  => $id,
-			$valField  => $text,
+			$valField  => (string) $text,
 			'disabled' => in_array($id, $this->disabledOptions),
 			'locked'   => in_array($id, $this->lockedOptions),
 		];

@@ -53,8 +53,6 @@ if (class_exists('GridFieldAddNewInlineButton')) {
 				$this->addFallbackValueToDisplayFields($grid, $editable);
 			}
 
-			$form = $editable->getForm($grid, $record);
-
 			if (!isset($value['GridFieldAddNewInlineButton']) || !is_array($value['GridFieldAddNewInlineButton'])) {
 				return;
 			}
@@ -64,6 +62,8 @@ if (class_exists('GridFieldAddNewInlineButton')) {
 			if (!singleton($class)->canCreate()) {
 				return;
 			}
+
+            $form = $editable->getForm($grid, $record);
 
 			foreach ($value['GridFieldAddNewInlineButton'] as $fields) {
 				$item = null;
@@ -82,7 +82,11 @@ if (class_exists('GridFieldAddNewInlineButton')) {
 
 				$extra = [];
 
-				$form->loadDataFrom($fields, Form::MERGE_CLEAR_MISSING);
+                if($item->exists())
+                    $form->loadDataFrom($item)->loadDataFrom($fields);
+                else
+                    $form->loadDataFrom($fields, Form::MERGE_CLEAR_MISSING);
+
 				$form->saveInto($item);
 
 				if ($list instanceof ManyManyList) {
@@ -240,7 +244,7 @@ if (class_exists('GridFieldAddNewInlineButton')) {
 			$fields = $editable->getDisplayFields($grid);
 
 			if (!isset($fields[$this->valFieldAfterSave])) {
-				$editable->setDisplayFields([$this->valFieldAfterSave => $this->valFieldAfterSave] + $fields);
+				$editable->setDisplayFields($fields + [$this->valFieldAfterSave => $this->valFieldAfterSave]);
 			}
 		}
 	}
