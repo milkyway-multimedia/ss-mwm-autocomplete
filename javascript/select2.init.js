@@ -34,7 +34,7 @@
                                     results: results
                                 };
 
-                                that.disabled = false;
+                                that[0].disabled = false;
                                 that.select2(config);
 
                                 that.removeClass('processing');

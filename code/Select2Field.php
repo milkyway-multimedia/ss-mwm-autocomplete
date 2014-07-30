@@ -57,11 +57,17 @@ class Select2Field extends TypeAheadField {
 			$vars['data-placeholder'] = $placeholder;
 		}
 
-		return array_merge(
+		$attrs = array_merge(
 			parent::getAttributes(), $vars, [
 				'type' => 'hidden',
 			]
 		);
+
+        if(isset($attrs['data-suggest-url']) && is_string($attrs['data-suggest-url'])) {
+            $attrs['data-suggest-url'] = str_replace('?q=%QUERY', '', $attrs['data-suggest-url']);
+        }
+
+        return $attrs;
 	}
 
 	protected function includeJs() {

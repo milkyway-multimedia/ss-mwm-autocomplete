@@ -19,7 +19,7 @@
 
                     if(!engine) {
                         engine = new Bloodhound({
-                            datumTokenizer: function(d) { console.log(d); return d; },
+                            datumTokenizer: function(d) {return d; },
                             queryTokenizer: Bloodhound.tokenizers.whitespace,
                             local: that.data('local') ? that.data('local') : null,
                             remote: that.data('remote') ? that.data('remote') : that.data('suggestUrl'),

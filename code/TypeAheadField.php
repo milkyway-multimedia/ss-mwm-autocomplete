@@ -320,7 +320,7 @@ class TypeAheadField extends TextField {
 				break;
 			}
 
-			if (is_array($item)) {
+			if (ArrayLib::is_associative($list) && is_array($item)) {
 				$result = $this->filterArray($q, $item, $class, $limit);
 
 				if ($noOfResult = count($result)) {
@@ -331,21 +331,36 @@ class TypeAheadField extends TextField {
 					$noOfResults += $noOfResult;
 					$results[] = $this->resultGroupToMap($key, $result);
 				}
-			} else {
-				$value = is_string($item) ? $item : $key;
+			} elseif(is_array($item)) {
+                $value = isset($item[$this->refField]) ? $item[$this->refField] : '';
+                $key = isset($item[$this->valField]) ? $item[$this->valField] : $noOfResults;
 
-				if (!is_string($value)) {
-					continue;
-				}
+                if (!is_string($value)) {
+                    continue;
+                }
 
-				if ($pattern && preg_match($pattern, $value)) {
-					$results[] = $this->resultToMap($key, $value);
-					$noOfResults ++;
-				} else {
-					$results[] = $this->resultToMap($key, $value);
-					$noOfResults ++;
-				}
-			}
+                if ($pattern && preg_match($pattern, $value)) {
+                    $results[] = $this->resultToMap($key, $value);
+                    $noOfResults ++;
+                } else {
+                    $results[] = $this->resultToMap($key, $value);
+                    $noOfResults ++;
+                }
+            } else {
+                $value = is_string($item) ? $item : $key;
+
+                if (!is_string($value)) {
+                    continue;
+                }
+
+                if ($pattern && preg_match($pattern, $value)) {
+                    $results[] = $this->resultToMap($key, $value);
+                    $noOfResults ++;
+                } else {
+                    $results[] = $this->resultToMap($key, $value);
+                    $noOfResults ++;
+                }
+            }
 		}
 
 		return $results;
