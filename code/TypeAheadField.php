@@ -332,8 +332,11 @@ class TypeAheadField extends TextField {
 					$results[] = $this->resultGroupToMap($key, $result);
 				}
 			} elseif(is_array($item)) {
-                $value = isset($item[$this->refField]) ? $item[$this->refField] : '';
-                $key = isset($item[$this->valField]) ? $item[$this->valField] : $noOfResults;
+                if(!($value = $this->getValueFromItem($item, $this->refField)))
+                    $value = '';
+
+                if(!($key = $this->getValueFromItem($item, $this->valField)))
+                    $key = $noOfResults;
 
                 if (!is_string($value)) {
                     continue;
@@ -405,7 +408,7 @@ class TypeAheadField extends TextField {
 			if($result->hasMethod('canView') && !$result->canView())
 				continue;
 
-			$results[] = $this->resultToMap($result->$valField, $result->$refField);
+			$results[] = $this->resultToMap($this->getValueFromItem($result, $valField), $this->getValueFromItem($result, $refField));
 		}
 
 		return $results;
@@ -426,6 +429,43 @@ class TypeAheadField extends TextField {
 			'children' => $children,
 		];
 	}
+
+    public function getValueFromItem($item, $setting = '') {
+        if(!$setting) $setting = $this->valField;
+        $valField = is_string($setting) && strpos($setting, '|') !== false ? explode('|', $setting) : $setting;
+
+        if(is_array($valField)) {
+            $value = '';
+
+            if ($item instanceof ViewableData) {
+                foreach ($valField as $field) {
+                    $value .= '|';
+                    $value .= $item->$field;
+                }
+            }
+            elseif ($item instanceof stdClass) {
+                foreach ($valField as $field) {
+                    $value .= '|';
+                    $value .= isset($item->$field) ? $item->$field : '';
+                }
+            }
+            elseif(is_array($item)) {
+                foreach ($valField as $field) {
+                    $value .= '|';
+                    $value .= isset($item[$field]) ? $item[$field] : '';
+                }
+            }
+
+            return trim($value, '|');
+        }
+
+        if(is_array($item) && isset($item[$valField]))
+            return $item[$valField];
+        elseif(is_object($item) && isset($item->$valField))
+            return $item->$valField;
+        else
+            return $item;
+    }
 
 	public function validate($validator) {
 		if ($this->requireSelection) {
