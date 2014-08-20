@@ -29,6 +29,9 @@ if (class_exists('GridFieldAddNewInlineButton')) {
 		/** @var DataList Use a different DataList to fill out the dropdown menu */
 		public $list;
 
+		/** @var boolean Allow new items to be added (otherwise must choose from dropdown) */
+		public $allowNewItems = true;
+
 		public function __construct($fragment = 'buttons-before-left', $valFieldAfterSave = 'Title', $refField = 'Title', $valField = 'ID') {
 			parent::__construct($fragment);
 
@@ -157,7 +160,7 @@ if (class_exists('GridFieldAddNewInlineButton')) {
 			if ($record->ID) {
 				$field = $this->getValFieldAfterSaveFormField($record);
 			} else {
-				$field = Select2Field::create('_AddOrExistingID', $columnName, '', $this->list ? $this->list : DataList::create($gridField->List->dataClass())->subtract($gridField->List), '', $this->refField, $this->valField)->setEmptyString(_t('GridFieldAddNewOrExistingInlineButton.AddOrSelectExisting', 'Add or select existing'))->setMinimumSearchLength(0);
+				$field = Select2Field::create('_AddOrExistingID', $columnName, '', $this->list ? $this->list : DataList::create($gridField->List->dataClass())->subtract($gridField->List), '', $this->refField, $this->valField)->setEmptyString(_t('GridFieldAddNewOrExistingInlineButton.AddOrSelectExisting', 'Add or select existing'))->setMinimumSearchLength(0)->requireSelection(!$this->allowNewItems);
 			}
 
 			return $field;

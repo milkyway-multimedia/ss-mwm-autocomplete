@@ -201,7 +201,7 @@ class TypeAheadField extends TextField {
 			]
 		);
 
-		if(!$this->form) {
+		if(!$this->form || (!$this->SuggestURL && !$this->PrefetchURL)) {
 			if ($list = $this->SourceList) {
 				$results = $this->results('', $list);
 			} else {
