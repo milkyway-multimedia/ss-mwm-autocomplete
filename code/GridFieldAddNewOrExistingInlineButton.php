@@ -32,6 +32,12 @@ if (class_exists('GridFieldAddNewInlineButton')) {
 		/** @var boolean Allow new items to be added (otherwise must choose from dropdown) */
 		public $allowNewItems = true;
 
+		/** @var boolean No item is selected at first by default */
+		public $hasEmptyDefault = true;
+
+		/** @var boolean Additional data to save with new record */
+		public $additionalData = [];
+
 		public function __construct($fragment = 'buttons-before-left', $valFieldAfterSave = 'Title', $refField = 'Title', $valField = 'ID') {
 			parent::__construct($fragment);
 
@@ -82,6 +88,8 @@ if (class_exists('GridFieldAddNewInlineButton')) {
 					}
 				}
 
+				$fields = array_merge($this->additionalData, $fields);
+
 				if (!$item) {
 					$item = $class::create();
 				}
@@ -96,7 +104,7 @@ if (class_exists('GridFieldAddNewInlineButton')) {
 				$form->saveInto($item);
 
 				if ($list instanceof ManyManyList) {
-					$extra = array_intersect_key($form->getData(), (array) $list->getExtraFields());
+					$extra = array_intersect_key(array_merge($this->additionalData, $form->getData()), (array) $list->getExtraFields());
 				}
 
 				$item->write();
@@ -160,7 +168,11 @@ if (class_exists('GridFieldAddNewInlineButton')) {
 			if ($record->ID) {
 				$field = $this->getValFieldAfterSaveFormField($record);
 			} else {
-				$field = Select2Field::create('_AddOrExistingID', $columnName, '', $this->list ? $this->list : DataList::create($gridField->List->dataClass())->subtract($gridField->List), '', $this->refField, $this->valField)->setEmptyString(_t('GridFieldAddNewOrExistingInlineButton.AddOrSelectExisting', 'Add or select existing'))->setMinimumSearchLength(0)->requireSelection(!$this->allowNewItems);
+				$list = $this->list ? $this->list : DataList::create($gridField->List->dataClass())->subtract($gridField->List);
+				$first = $list->first();
+				$field = Select2Field::create('_AddOrExistingID', $columnName, '', $list, '', $this->refField, $this->valField)->setEmptyString(_t('GridFieldAddNewOrExistingInlineButton.AddOrSelectExisting', 'Add or select existing'))->setMinimumSearchLength(0)->requireSelection(!$this->allowNewItems)->setHasEmptyDefault($this->hasEmptyDefault);
+				if($first && !$this->hasEmptyDefault)
+					$field->setValue($first->ID);
 			}
 
 			return $field;
@@ -211,7 +223,7 @@ if (class_exists('GridFieldAddNewInlineButton')) {
 
 					return $closure($record);
 				} else {
-					return Object::create($this->valFieldCallback, $this->valFieldAfterSave);
+					return Object::create($this->valFieldCallback, $this->valFieldAfterSave, '');
 				}
 			}
 
