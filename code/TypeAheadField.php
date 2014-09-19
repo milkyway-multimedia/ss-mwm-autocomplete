@@ -188,10 +188,20 @@ class TypeAheadField extends TextField {
 	function getAttributes() {
 		$this->extraClasses[] = 'text';
 
+        if(isset($_GET)) {
+            $query = $_GET;
+
+            if(isset($query['url'])) unset($query['url']);
+
+            $query = http_build_query($query);
+        }
+        else
+            $query = '';
+
 		$attributes = array_merge(
 			[
-				'data-suggest-url'       => $this->SuggestURL ? $this->SuggestURL . '?q=%QUERY' : false,
-				'data-prefetch-url'      => $this->PrefetchURL,
+				'data-suggest-url'       => $this->SuggestURL ? Controller::join_links($this->SuggestURL, '?' . $query, '?q=%QUERY') : false,
+				'data-prefetch-url'      => $this->PrefetchURL ? Controller::join_links($this->PrefetchURL, '?' . $query) : false,
 				'data-min-length'        => $this->minSearchLength,
 				'data-require-selection' => $this->requireSelection,
 				'data-name'              => strtolower($this->ID()),
@@ -201,7 +211,7 @@ class TypeAheadField extends TextField {
 			]
 		);
 
-		if(!$this->form) {
+		if(!$this->form || (!$this->SuggestURL && !$this->PrefetchURL)) {
 			if ($list = $this->SourceList) {
 				$results = $this->results('', $list);
 			} else {

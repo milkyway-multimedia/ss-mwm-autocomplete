@@ -64,7 +64,7 @@ class Select2Field extends TypeAheadField {
 		);
 
         if(isset($attrs['data-suggest-url']) && is_string($attrs['data-suggest-url'])) {
-            $attrs['data-suggest-url'] = str_replace('?q=%QUERY', '', $attrs['data-suggest-url']);
+            $attrs['data-suggest-url'] = str_replace('q=%QUERY', '', $attrs['data-suggest-url']);
         }
 
         return $attrs;
