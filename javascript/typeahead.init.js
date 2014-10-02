@@ -19,11 +19,13 @@
 
                     if(!engine) {
                         engine = new Bloodhound({
-                            datumTokenizer: function(d) {return d; },
+                            datumTokenizer: function(d) {
+	                            return d;
+                            },
                             queryTokenizer: Bloodhound.tokenizers.whitespace,
                             local: that.data('local') ? that.data('local') : null,
-                            remote: that.data('remote') ? that.data('remote') : that.data('suggestUrl'),
-                            prefetch: that.data('prefetch') ? that.data('prefetch') : that.data('prefetchUrl')
+                            remote: that.data('remote') ? decodeURIComponent(that.data('remote')) : decodeURIComponent(that.data('suggestUrl')),
+                            prefetch: that.data('prefetch') ? decodeURIComponent(that.data('prefetch')) : decodeURIComponent(that.data('prefetchUrl'))
                         });
 
                         that.data('searchEngine', engine);
@@ -50,7 +52,8 @@
                     }
 
                     that.addClass('has-typeahead').typeahead(null, $.extend({}, data, {
-                        source: engine.ttAdapter()
+                        source: engine.ttAdapter(),
+	                    displayKey: 'id'
                     }));
 
                     return this._super();

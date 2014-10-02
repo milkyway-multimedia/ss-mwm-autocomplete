@@ -383,6 +383,7 @@ class TypeAheadField extends TextField {
 		$results = [];
 
 		$search = $this->scaffoldSearchFields($class);
+		$sort = $this->refField ? $this->refField : strtok($search[0], ':');
 		$params = [];
 
 		if ($q) {
@@ -393,11 +394,11 @@ class TypeAheadField extends TextField {
 
 			$resulting = $list
 				->filterAny($params)
-				->sort(strtok($search[0], ':'), 'ASC')
+				->sort($sort, 'ASC')
 				->limit($limit);
 		} else {
 			$resulting = $list
-				->sort(strtok($search[0], ':'), 'ASC')
+				->sort($sort, 'ASC')
 				->limit($limit);
 		}
 
@@ -522,10 +523,12 @@ class TypeAheadField extends TextField {
 		}
 
 		if (is_null($fields)) {
-			if ($obj->hasDatabaseField('Title')) {
-				$fields = ['Title'];
+			if ($this->valField && $obj->hasDatabaseField($this->valField)) {
+				$fields = [$this->valField . ':StartsWith'];
+			} elseif ($obj->hasDatabaseField('Title')) {
+				$fields = ['Title:StartsWith'];
 			} elseif ($obj->hasDatabaseField('Name')) {
-				$fields = ['Name'];
+				$fields = ['Name:StartsWith'];
 			}
 		}
 
