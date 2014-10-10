@@ -211,7 +211,7 @@ class TypeAheadField extends TextField {
 			]
 		);
 
-		if(!$this->form || (!$this->SuggestURL && !$this->PrefetchURL)) {
+		if(!$this->form || (!$this->SuggestURL && !$this->PrefetchURL) || is_array($this->SourceList)) {
 			if ($list = $this->SourceList) {
 				$results = $this->results('', $list);
 			} else {
@@ -219,6 +219,11 @@ class TypeAheadField extends TextField {
 			}
 
 			$attributes['data-local'] = json_encode($results);
+		}
+
+		if(is_array($this->SourceList)) {
+			unset($attributes['data-suggest-url']);
+			unset($attributes['data-prefetch-url']);
 		}
 
 		return $attributes;
