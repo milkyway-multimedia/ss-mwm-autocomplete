@@ -65,6 +65,9 @@ class TypeAheadField extends TextField {
 	/** @var array Options that will always be selected */
 	public $lockedOptions = [];
 
+	/** @var string|boolean Sort array by key/value/false */
+	public $sortArray = false;
+
 	function __construct(
 		$name,
 		$title = null,
@@ -379,6 +382,14 @@ class TypeAheadField extends TextField {
                     $noOfResults ++;
                 }
             }
+		}
+
+		if($this->sortArray) {
+			$key = ($this->sortArray === 'key') ? 'id' : 'text';
+
+			usort($results, function($result1, $result2) use($key) {
+				return strcmp($result1[$key], $result2[$key]);
+			});
 		}
 
 		return $results;
