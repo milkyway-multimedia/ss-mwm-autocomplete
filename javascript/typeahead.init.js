@@ -18,15 +18,21 @@
                         return this._super();
 
                     if(!engine) {
-                        engine = new Bloodhound({
+                        var bloodhoundOptions = {
                             datumTokenizer: function(d) {
-	                            return d;
+                                console.log(d);
+                                return d;
                             },
                             queryTokenizer: Bloodhound.tokenizers.whitespace,
                             local: that.data('local') ? that.data('local') : null,
-                            remote: that.data('remote') ? decodeURIComponent(that.data('remote')) : decodeURIComponent(that.data('suggestUrl')),
-                            prefetch: that.data('prefetch') ? decodeURIComponent(that.data('prefetch')) : decodeURIComponent(that.data('prefetchUrl'))
-                        });
+                            remote: that.data('remote') ? decodeURIComponent(that.data('remote')) : decodeURIComponent(that.data('suggestUrl'))
+                        };
+
+                        if(that.data('prefetch') || that.data('prefetchUrl')) {
+                            bloodhoundOptions.prefetch = that.data('prefetch') ? decodeURIComponent(that.data('prefetch')) : decodeURIComponent(that.data('prefetchUrl'));
+                        }
+
+                        engine = new Bloodhound(bloodhoundOptions);
 
                         that.data('searchEngine', engine);
                     }
@@ -49,11 +55,19 @@
 
                         if(data.hasOwnProperty('templates.suggestion'))
                             data.templates.suggestion = data['templates.suggestion'];
+                        else {
+                            data.templates.suggestion = function(template) {
+                                if(template.text)
+                                    return '<p>' + template.text + '</p>';
+                                else
+                                    return '<p>' + template.id + '</p>';
+                            };
+                        }
                     }
 
                     that.addClass('has-typeahead').typeahead(null, $.extend({}, data, {
                         source: engine.ttAdapter(),
-	                    displayKey: 'id'
+	                    displayKey: that.data('displayKey') ? that.data('displayKey') : 'id'
                     }));
 
                     return this._super();

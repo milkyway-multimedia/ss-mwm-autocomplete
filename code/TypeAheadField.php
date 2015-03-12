@@ -68,6 +68,12 @@ class TypeAheadField extends TextField {
 	/** @var string|boolean Sort array by key/value/false */
 	public $sortArray = false;
 
+	/** @var string Query key */
+	public $queryKey = 'q';
+
+	/** @var Callable Callback for parsing results */
+	protected $resultsCallback;
+
 	function __construct(
 		$name,
 		$title = null,
@@ -153,7 +159,12 @@ class TypeAheadField extends TextField {
 			return $this->sourceList;
 		}
 
-		return $this->suggestURL !== null ? $this->suggestURL : $this->form ? $this->Link('suggestion') : '';
+		if($this->suggestURL !== null)
+			return $this->suggestURL;
+		elseif($this->form)
+			return $this->Link('suggestion');
+		else
+			return '';
 	}
 
 	function setSuggestURL($val = null) {
@@ -188,6 +199,16 @@ class TypeAheadField extends TextField {
 		return $this;
 	}
 
+	function setQueryKey($key = 'q') {
+		$this->queryKey = $key;
+		return $this;
+	}
+
+	function setResultsCallback($callback = null) {
+		$this->resultsCallback = $callback;
+		return $this;
+	}
+
 	function getAttributes() {
 		$this->extraClasses[] = 'text';
 
@@ -203,7 +224,7 @@ class TypeAheadField extends TextField {
 
 		$attributes = array_merge(
 			[
-				'data-suggest-url'       => $this->SuggestURL ? Controller::join_links($this->SuggestURL, '?' . $query, '?q=%QUERY') : false,
+				'data-suggest-url'       => $this->SuggestURL ? Controller::join_links($this->SuggestURL, '?' . $query, sprintf('?%s=%%QUERY', $this->queryKey)) : false,
 				'data-prefetch-url'      => $this->PrefetchURL ? Controller::join_links($this->PrefetchURL, '?' . $query) : false,
 				'data-min-length'        => $this->minSearchLength,
 				'data-require-selection' => $this->requireSelection,
@@ -263,7 +284,23 @@ class TypeAheadField extends TextField {
 		}
 
 		// input
-		$results = $this->results(Convert::raw2sql($r->getVar('q')), $list, null, $limit);
+		if($this->resultsCallback) {
+			$callbacks = [
+				'resultsToMap' => function($list, $valField = 'ID', $refField = 'Title') {
+						return $this->resultsToMap($list, $valField, $refField);
+					},
+				'resultToMap' => function($id, $text, $keyField = 'id', $valField = 'text') {
+						return $this->resultToMap($id, $text, $keyField, $valField);
+					},
+				'getValueFromItem' => function($item, $setting = '') {
+						return $this->getValueFromItem($item, $setting);
+					},
+			];
+
+			$results = $this->resultsCallback(Convert::raw2sql($r->getVar($this->queryKey)), $list, null, $limit, $callbacks);
+		}
+		else
+			$results = $this->results(Convert::raw2sql($r->getVar($this->queryKey)), $list, null, $limit);
 
 		$response = new SS_HTTPResponse(json_encode($results), 200, '');
 		$response->addHeader('Content-type', 'application/json');
@@ -294,7 +331,7 @@ class TypeAheadField extends TextField {
 		$list = $list ? $list : $this->SourceList;
 
 		if ($list instanceof Closure) {
-			$list = $list($q);
+			$list = $list($q, $limit);
 		}
 
 		$class = $class ? $class : ($list && !is_array($list)) ? $list->dataClass() : $this->SourceClass;
@@ -350,7 +387,7 @@ class TypeAheadField extends TextField {
 					$results[] = $this->resultGroupToMap($key, $result);
 				}
 			} elseif(is_array($item)) {
-                if(!($value = $this->getValueFromItem($item, $this->refField)))
+                if(!($value = $this->getValueFromItem($item, $this->refField, ' - ', true)))
                     $value = '';
 
                 if(!($key = $this->getValueFromItem($item, $this->valField)))
@@ -360,7 +397,7 @@ class TypeAheadField extends TextField {
                     continue;
                 }
 
-                if ($pattern && preg_match($pattern, $value)) {
+                if ($pattern && preg_match(preg_quote($pattern), $value)) {
                     $results[] = $this->resultToMap($key, $value);
                     $noOfResults ++;
                 } else {
@@ -374,7 +411,7 @@ class TypeAheadField extends TextField {
                     continue;
                 }
 
-                if ($pattern && preg_match($pattern, $value)) {
+                if ($pattern && preg_match(preg_quote($pattern), $value)) {
                     $results[] = $this->resultToMap($key, $value);
                     $noOfResults ++;
                 } else {
@@ -435,7 +472,7 @@ class TypeAheadField extends TextField {
 			if($result->hasMethod('canView') && !$result->canView())
 				continue;
 
-			$results[] = $this->resultToMap($this->getValueFromItem($result, $valField), $this->getValueFromItem($result, $refField));
+			$results[] = $this->resultToMap($this->getValueFromItem($result, $valField), $this->getValueFromItem($result, $refField, ' - ', true));
 		}
 
 		return $results;
@@ -457,33 +494,33 @@ class TypeAheadField extends TextField {
 		];
 	}
 
-    public function getValueFromItem($item, $setting = '') {
+    public function getValueFromItem($item, $setting = '', $implodeWith = '|', $clearEmpty = false) {
         if(!$setting) $setting = $this->valField;
         $valField = is_string($setting) && strpos($setting, '|') !== false ? explode('|', $setting) : $setting;
 
         if(is_array($valField)) {
-            $value = '';
+            $value = [];
 
             if ($item instanceof ViewableData) {
                 foreach ($valField as $field) {
-                    $value .= '|';
-                    $value .= $item->$field;
+                    $value[] = $item->$field;
                 }
             }
             elseif ($item instanceof stdClass) {
                 foreach ($valField as $field) {
-                    $value .= '|';
-                    $value .= isset($item->$field) ? $item->$field : '';
+                    $value[] = isset($item->$field) ? $item->$field : '';
                 }
             }
             elseif(is_array($item)) {
                 foreach ($valField as $field) {
-                    $value .= '|';
-                    $value .= isset($item[$field]) ? $item[$field] : '';
+                    $value[] = isset($item[$field]) ? $item[$field] : '';
                 }
             }
 
-            return trim($value, '|');
+	        if($clearEmpty)
+		        $value = array_filter($value);
+
+            return implode($implodeWith, $value);
         }
 
         if(is_array($item) && isset($item[$valField]))
@@ -495,7 +532,7 @@ class TypeAheadField extends TextField {
     }
 
 	public function validate($validator) {
-		if ($this->requireSelection) {
+		if ($this->requireSelection && !($this->SourceList instanceof Closure)) {
 			$results = $this->results($this->value);
 
 			if (!$results || !count($results)) {

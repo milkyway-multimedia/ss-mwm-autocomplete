@@ -50,7 +50,11 @@ class Select2Field extends TypeAheadField {
 			'data-allow-html'           => $this->allowHTML,
 		];
 
-		$placeholder = $this->hasEmptyDefault ? $this->emptyString ? $this->emptyString : _t('Select2DropdownField.SELECT___', 'Select...') : ' ';
+		if($this->hasEmptyDefault) {
+			$placeholder = $this->emptyString ?: _t('Select2DropdownField.SELECT___', 'Select...');
+		}
+		else
+			$placeholder = ' ';
 
 		if ($placeholder) {
 			$vars['placeholder']      = $placeholder;
