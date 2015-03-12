@@ -71,6 +71,9 @@ class TypeAheadField extends TextField {
 	/** @var string Query key */
 	public $queryKey = 'q';
 
+	/** @var string Separator for keys */
+	public $separator = '|';
+
 	/** @var Callable Callback for parsing results */
 	protected $resultsCallback;
 
@@ -292,12 +295,13 @@ class TypeAheadField extends TextField {
 				'resultToMap' => function($id, $text, $keyField = 'id', $valField = 'text') {
 						return $this->resultToMap($id, $text, $keyField, $valField);
 					},
-				'getValueFromItem' => function($item, $setting = '') {
-						return $this->getValueFromItem($item, $setting);
+				'getValueFromItem' => function($item, $setting = '', $implodeWith = '|', $clearEmpty = false) {
+						return $this->getValueFromItem($item, $setting, $implodeWith, $clearEmpty);
 					},
 			];
+			$resultsCallback = $this->resultsCallback;
 
-			$results = $this->resultsCallback(Convert::raw2sql($r->getVar($this->queryKey)), $list, null, $limit, $callbacks);
+			$results = $resultsCallback(Convert::raw2sql($r->getVar($this->queryKey)), $list, null, $limit, $callbacks);
 		}
 		else
 			$results = $this->results(Convert::raw2sql($r->getVar($this->queryKey)), $list, null, $limit);
@@ -496,7 +500,7 @@ class TypeAheadField extends TextField {
 
     public function getValueFromItem($item, $setting = '', $implodeWith = '|', $clearEmpty = false) {
         if(!$setting) $setting = $this->valField;
-        $valField = is_string($setting) && strpos($setting, '|') !== false ? explode('|', $setting) : $setting;
+        $valField = is_string($setting) && strpos($setting, $this->separator) !== false ? explode($this->separator, $setting) : $setting;
 
         if(is_array($valField)) {
             $value = [];
