@@ -3,7 +3,7 @@
     "version"        : "0.1",
     "private"        : true,
     "dependencies"   : {
-        "typeahead.js": "~0.10",
-        "select2": "~3.5"
+        "typeahead.js": "~0.11",
+        "select2": "~4"
     }
 }

@@ -23,7 +23,7 @@ Add the following to your composer.json file
 * MIT
 
 ## Version 
-* Version 0.1 - Alpha
+* Version 0.2 - Alpha
 
 ## Contact
 #### Milkyway Multimedia

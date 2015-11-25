@@ -1,5 +1,7 @@
 <?php
 
+use SS_HTTPRequest as HTTPRequest;
+
 class TypeAheadField extends TextField {
 
 	private static $allowed_actions = [
@@ -77,6 +79,19 @@ class TypeAheadField extends TextField {
 	/** @var Callable Callback for parsing results */
 	protected $resultsCallback;
 
+	protected $disallowedSearchTypes = [
+		'Int',
+		'Date',
+		'Boolean',
+		'Decimal',
+		'Double',
+		'Float',
+		'Int',
+		'Percentage',
+		'Time',
+		'Year',
+	];
+
 	function __construct(
 		$name,
 		$title = null,
@@ -121,6 +136,17 @@ class TypeAheadField extends TextField {
 
 	function setSourceList($value) {
 		$this->sourceList = $value;
+
+		return $this;
+	}
+
+	public function setSource($items) {
+		if(is_array($items) || ($items instanceof ArrayAccess)) {
+			$this->sourceList = $items;
+		}
+		else {
+			$this->sourceClass = $items;
+		}
 
 		return $this;
 	}
@@ -312,7 +338,7 @@ class TypeAheadField extends TextField {
 		return $response;
 	}
 
-	function prefetch(HTTPRequest $r) {
+	function prefetch(HTTPRequest $r = null) {
 		if ($this->prefetch === true) {
 			$limit = null;
 		} else {
@@ -332,11 +358,7 @@ class TypeAheadField extends TextField {
 	}
 
 	public function results($q = '', $list = null, $class = null, $limit = 10) {
-		$list = $list ? $list : $this->SourceList;
-
-		if ($list instanceof Closure) {
-			$list = $list($q, $limit);
-		}
+		$list = $this->getListToUse($list, $q, $limit);
 
 		$class = $class ? $class : ($list && !is_array($list)) ? $list->dataClass() : $this->SourceClass;
 
@@ -554,6 +576,16 @@ class TypeAheadField extends TextField {
 		return parent::validate($validator);
 	}
 
+	protected function getListToUse($list = null, $q = '', $limit = 0) {
+		$list = $list ? $list : $this->SourceList;
+
+		if ($list instanceof Closure) {
+			$list = $list($q, $limit);
+		}
+
+		return $list;
+	}
+
 	protected function scaffoldSearchFields($dataClass) {
 		if ($this->sourceField) {
 			return $this->sourceField;
@@ -563,15 +595,15 @@ class TypeAheadField extends TextField {
 		$fields = null;
 
 		if ($fieldSpecs = $obj->searchableFields()) {
-			$customSearchableFields = $obj->config()->searchable_fields;
 			foreach ($fieldSpecs as $name => $spec) {
-				if (is_array($spec) && array_key_exists('filter', $spec)) {
-					if (!$customSearchableFields || array_search($name, $customSearchableFields)) {
-						$filter = 'StartsWith';
-					} else {
-						$filter = preg_replace('/Filter$/', '', $spec['filter']);
-					}
+				$casting = explode('(', $obj->castingHelper($name));
 
+				if(isset($casting[0]) && in_array($casting[0], $this->disallowedSearchTypes)) {
+					continue;
+				}
+
+				if (is_array($spec) && array_key_exists('filter', $spec)) {
+					$filter = preg_replace('/Filter$/', '', $spec['filter']);
 					$fields[] = "{$name}:{$filter}";
 				} else {
 					$fields[] = $name;
@@ -595,8 +627,8 @@ class TypeAheadField extends TextField {
 	protected function includeJs() {
 		Requirements::javascript(THIRDPARTY_DIR . '/jquery/jquery.js');
 		Requirements::javascript(THIRDPARTY_DIR . '/jquery-entwine/dist/jquery.entwine-dist.js');
-		Requirements::javascript(SS_MWM_AUTOCOMPLETE_DIR . '/thirdparty/typeahead.js/dist/typeahead.bundle.js');
-		Requirements::javascript(SS_MWM_AUTOCOMPLETE_DIR . '/javascript/typeahead.init.js');
+		Requirements::javascript(SS_MWM_AUTOCOMPLETE_DIR . '/thirdparty/js/typeahead.bundle.js');
+		Requirements::javascript(SS_MWM_AUTOCOMPLETE_DIR . '/js/typeahead.init.js');
 	}
 
 	protected function includeCss() {

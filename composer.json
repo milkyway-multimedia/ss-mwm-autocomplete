@@ -1,20 +1,25 @@
 {
-    "name"             : "milkyway-multimedia/ss-mwm-autocomplete",
-    "description"      : "Contains a collection of fields specifically for autocompletion. Uses typeahead for normal completion, and select 2 for dropdown style autocompletion.",
-    "type"             : "silverstripe-module",
-    "keywords"         : ["autocomplete", "typeahead", "select2", "tagging"],
-    "license"          : "MIT",
-    "require"          : {
-        "silverstripe/framework": "~3.1"
-    },
-    "suggest"    : {
-        "ajshort/silverstripe-gridfieldextensions"         : "If you want to use the included GridFieldAddNewOrExistingInlineButton component, you will need to install gridfieldextensions"
-    },
-    "extra"            : {
-        "installer-name": "mwm-autocomplete"
-    },
-    "config"           : {
-        "process-timeout": 600
-    },
-    "minimum-stability": "dev"
+  "name": "milkyway-multimedia/ss-mwm-autocomplete",
+  "description": "Contains a collection of fields specifically for autocompletion. Uses typeahead for normal completion, and select 2 for dropdown style autocompletion.",
+  "type": "silverstripe-module",
+  "keywords": [
+    "autocomplete",
+    "typeahead",
+    "select2",
+    "tagging"
+  ],
+  "license": "MIT",
+  "require": {
+    "silverstripe/framework": "3.x"
+  },
+  "suggest": {
+    "ajshort/silverstripe-gridfieldextensions": "If you want to use the included GridFieldAddNewOrExistingInlineButton component, you will need to install gridfieldextensions"
+  },
+  "extra": {
+    "installer-name": "mwm-autocomplete"
+  },
+  "config": {
+    "process-timeout": 600
+  },
+  "minimum-stability": "dev"
 }
