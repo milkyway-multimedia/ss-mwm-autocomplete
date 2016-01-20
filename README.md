@@ -1,3 +1,6 @@
+# This package is no longer maintained
+Please us milkyway-multimedia/ss-mwm-formfields instead: https://github.com/milkyway-multimedia/ss-mwm-formfields
+
 Autocomplete Fields
 ======
 **Autocomplete Fields** is a collection of fields specifically for autocompletion. Uses typeahead for normal completion, and select 2 for dropdown style autocompletion.
