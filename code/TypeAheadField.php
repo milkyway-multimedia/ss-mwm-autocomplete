@@ -634,4 +634,4 @@ class TypeAheadField extends TextField {
 	protected function includeCss() {
 		Requirements::css(SS_MWM_AUTOCOMPLETE_DIR . '/css/typeahead.field.css');
 	}
-} 
+}

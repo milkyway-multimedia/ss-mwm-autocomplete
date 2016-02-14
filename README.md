@@ -22,10 +22,10 @@ Add the following to your composer.json file
 
 ```
 
-## License 
+## License
 * MIT
 
-## Version 
+## Version
 * Version 0.2 - Alpha
 
 ## Contact
